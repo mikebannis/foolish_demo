@@ -1,0 +1,20 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>  
+    {% block title %}<title>Foolish Demo</title>{% endblock %}
+    <meta charset="utf-8">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
+    <!-- Add additional CSS in static file -->
+    {% load static %}
+  
+    {% block extra_head %}    {% endblock %}
+  </head>
+  <body>
+    <h1> This is the base template! </h1>
+    {% block content %}
+    {% endblock %}
+    <h1> This is the end of the base template! </h1>
+  </body>
+</html>
