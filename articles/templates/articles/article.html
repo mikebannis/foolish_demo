@@ -14,10 +14,16 @@
       flex: 25%;
       margin-left: 0.5em;
     }
+
+    .price {
+      display:inline-block;
+    }
+
     .positive {
       color: green;
       display:inline-block;
     }
+
     .negative {
       color: red;
       display:inline-block;
@@ -35,11 +41,12 @@
           <div class="stock_quotes">
               {% for quote in quotes %}
                 <div class="quote">
-                  <p id="{{quote.QuoteNum}}">
-                  <div class="co_name">{{quote.CompanyName}}</div>
-                  <div class="symbol">{{quote.Exchange}}: {{quote.Symbol}}</div>
-                  <div class="price">{{quote.CurrentPrice.Amount}} </div>
-                  <div class="{{quote.ChangeClass}}"> {{quote.Change.Amount}} ({{quote.MyChange}}%) </div></p>
+                  <p>
+                    <div class="co_name">{{quote.CompanyName}}</div>
+                    <div class="symbol">{{quote.Exchange}}: {{quote.Symbol}}</div>
+                    <div class="price">${{quote.CurrentPrice.Amount}} </div> 
+                    <div class="{{quote.ChangeClass}}"> ${{quote.Change.Amount}} ({{quote.MyChange}}%) </div>
+                  </p>
                 </div>
               {% endfor %}
           </div>
