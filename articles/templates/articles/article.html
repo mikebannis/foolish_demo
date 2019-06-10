@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load comments %}
 
 {% block extra_head %}
 <style>
@@ -32,12 +33,21 @@
 {% endblock %}
 
 {% block content %}
-  <h2> In the article template </h2>
+  <h2> {{art_stuff.headline}} </h2>
   <div class="row">
       <div class="l_column">
-          {% autoescape off %}{{ art_body }}{% endautoescape %}
+        <div class="author_name">
+          {{art_stuff.author}}
+        </div>
+        <div class="pub_date">
+          {{art_stuff.date}}
+        </div>
+        {% autoescape off %}{{ art_body }}{% endautoescape %}
+        {% render_comment_list for db_article %}
+        {% render_comment_form for db_article %}
       </div>
       <div class="r_column">
+          <h3>Stocks</h3>
           <div class="stock_quotes">
               {% for quote in quotes %}
                 <div class="quote">

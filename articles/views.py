@@ -35,13 +35,13 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 def article(request, art_id=None):
-    """ Render article body """
+    """ Render article body, comments, and stock quotes """
     ### TODO - check for None
     art = get_article(art_id)
     quotes = get_quotes()
 
     # Add additional info to quotes
-    for i, q in enumerate(quotes):
+    for q in quotes:
         q['MyChange'] = round(q['PercentChange']['Value']*100, 2)
 
         # Color coding for stock price change
@@ -50,8 +50,15 @@ def article(request, art_id=None):
         else:
             q['ChangeClass'] = 'negative'
         
+    slug = slugify(art['headline'])
+    db_article = Articles.objects.get(article_slug=slug)
+
     template = loader.get_template('articles/article.html')
-    context = {'art_body': art['body'], 'quotes': quotes}
+    context = {'art_body': art['body'], 
+               'quotes': quotes, 
+               'db_article': db_article,
+               'art_stuff': prep_article(art_id),
+    }
     return HttpResponse(template.render(context, request))
 
 def load_articles(request):
@@ -64,7 +71,7 @@ def load_articles(request):
     for new_article in new_articles:
         slug = slugify(new_article['headline'])
         try:
-            exist_article = Articles.objects.get(article_slug=slug)
+            _ = Articles.objects.get(article_slug=slug)
         except Articles.DoesNotExist:
             Articles.objects.create(article_slug=slug)
             count += 1
@@ -80,6 +87,7 @@ class RandArticle(object):
         """ :param main_art_num: number of main article on homepage """
         self.used_arts = [main_art_num]
         self.num_art = num_articles()
+        # TODO: error handling below should be better
         if self.num_art < 4:
             raise ValueError('There must be at least four articles for this to work')
 

@@ -1,3 +1,4 @@
 foolish_demo/settings.py
 *.swp
+*.pyc
 
