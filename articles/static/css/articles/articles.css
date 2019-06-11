@@ -1,0 +1,27 @@
+.row {
+  display: flex;
+}
+
+.l_column {
+  flex: 75%;
+}
+
+.r_column {
+  flex: 25%;
+  margin-left: 0.5em;
+}
+
+.price {
+  display:inline-block;
+}
+
+/* Color coding for stock price changes */
+.positive {
+  color: green;
+  display:inline-block;
+}
+
+.negative {
+  color: red;
+  display:inline-block;
+}

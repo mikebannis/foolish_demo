@@ -1,0 +1,47 @@
+.row {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.l_column_main {
+    flex: 50%;
+}
+
+.r_column_main {
+    flex: 50%;
+}
+
+#main_img {
+    width: 70%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.art_img {
+    width: 70%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.l_column {
+    flex: 33%;
+}
+
+.m_column {
+    flex: 33%;
+}
+
+.r_column {
+    flex: 33%;
+}
+
+.headline {
+    font-family: "Helvetica Neue";
+    font-size: 26px;
+    color: rgb(0, 119, 170);
+    border-bottom-color: rgb(221, 221, 221);
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+}
