@@ -17,7 +17,8 @@ class Articles(models.Model):
         for art in arts:
             if self.slugify(art['headline']) == self.article_slug:
                 return art
-        # TODO: http404 is wrong, if we get hear something is wrong in the DB, notify admin
+        # TODO: http404 is wrong, if we get here something is wrong in the DB 
+        # (or this code), notify admin
         raise Http404
 
     def prep_article(self):
