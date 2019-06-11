@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load comments %}
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+    {% for article in articles %}
+        <h1> {{article.headline}}</h1>
+        <ul>
+        {% for tag in article.tags %}
+            <li>{{tag.slug}}</li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+{% endblock %}
+

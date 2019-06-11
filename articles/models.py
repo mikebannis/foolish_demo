@@ -10,13 +10,14 @@ CONTENT = 'articles/data/content_api.json'
 # Article model for linking comments. Article info is kept in JSON file
 class Articles(models.Model):
     article_slug=models.CharField(max_length=500, null=True) 
-    
+
     def get_json_data(self):
         """ Return dict of article info represented by self from JSON file """
-        arts = self._get_articles()
+        arts = self._get_articles_json()
         for art in arts:
             if self.slugify(art['headline']) == self.article_slug:
                 return art
+        # TODO: http404 is wrong, if we get hear something is wrong in the DB, notify admin
         raise Http404
 
     def prep_article(self):
@@ -27,6 +28,7 @@ class Articles(models.Model):
         date = dt.strptime(json_data['publish_at'].split('T')[0], '%Y-%m-%d')
         date = date.strftime('%B %d, %Y')
         return {
+            'body': json_data['body'],
             'image': json_data['images'][0]['url'],
             'headline': json_data['headline'],
             'author': json_data['authors'][0]['byline'],
@@ -35,8 +37,25 @@ class Articles(models.Model):
             'art_slug': self.article_slug,
         }
     
+    def tag_exists(self, tag_slug):
+        """ Returns True if one of the tag slugs is 'tag_slug'. Otherwise, return False """
+        json_data = self.get_json_data()
+        for tag in json_data['tags']:  
+            if tag['slug'] == tag_slug:
+                return True
+        return False
+
+    @staticmethod
+    def get_first_with_tag(tag):
+        """ Return first article in DB with tag slug 'tag' """
+        arts = Articles.objects.all()
+        for art in arts:
+            if art.tag_exists(tag):
+                return art
+        raise ValueError(f'No article with tag {tag} found!')
+        
     @staticmethod    
-    def _get_articles():
+    def _get_articles_json():
         """ Return all articles as list of dicts from CONTENT JSON file """
         with open(CONTENT, 'rt') as f:
             content = json.loads(f.readline())
@@ -50,6 +69,9 @@ class Articles(models.Model):
         readability.
         """
         return django_slugify(headline)
+
+    def __str__(self):
+        return self.article_slug
 
 #    def num_articles():
 #        """ Return number of articles in JSON file """
