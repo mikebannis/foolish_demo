@@ -1,123 +1,75 @@
 {% extends "base.html" %}
 
 {% block extra_head %}
-<style>
-    .row {
-        display: flex;
-        margin-bottom: 10px;
-    }
-
-    .l_column_main {
-        flex: 50%;
-    }
-
-    .r_column_main {
-        flex: 50%;
-    }
-
-    #main_img {
-        width: 70%;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .art_img {
-        width: 70%;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .l_column {
-        flex: 33%;
-    }
-
-    .m_column {
-        flex: 33%;
-    }
-
-    .r_column {
-        flex: 33%;
-    }
-
-    .headline {
-        font-family: "Helvetica Neue";
-        font-size: 26px;
-        color: rgb(0, 119, 170);
-        border-bottom-color: rgb(221, 221, 221);
-        border-bottom-style: solid;
-        border-bottom-width: 1px;
-    }       
-</style>
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/index.css" />
 {% endblock %}
 
 {% block content %}
-    <div class="main_article">
-        <div class="row">
-            <div class="l_column_main">
-                <img src="{{main_art.image}}" id="main_img">
-            </div>
-            <div class="r_column_main">
-                <div class="headline">
-                    <a href="articles/{{main_art.art_slug}}">
-                        {{main_art.headline}}
-                    </a>
-                </div>
-                <div class="author_date">
-                    {{main_art.author}} | {{main_art.date}}
-                </div>
-                <div class="text">
-                    {{main_art.text}}
-                </div>
-            </div>
-        </div>
-    </div>
+  <div class="main_article">
     <div class="row">
-        <div class="l_column">
-            <img src="{{left_art.image}}" class="art_img">
-            <div class="headline">
-                <a href="articles/{{left_art.art_slug}}">
-                    {{left_art.headline}}
-                </a>
-            </div>
-            <div class="author_date">
-                {{left_art.author}} | {{left_art.date}}
-            </div>
-            <div class="text">
-                {{left_art.text}}
-            </div>
+      <div class="l_column_main">
+        <img src="{{main_art.image}}" id="main_img">
+      </div>
+      <div class="r_column_main">
+        <div class="headline">
+          <a href="articles/{{main_art.art_slug}}">
+            {{main_art.headline}}
+          </a>
         </div>
-        <div class="m_column">
-            <img src="{{mid_art.image}}" class="art_img">
-            <div class="headline">
-                <a href="articles/{{mid_art.art_slug}}">
-                    {{mid_art.headline}}
-                </a>
-            </div>
-            <div class="author_date">
-                {{mid_art.author}} | {{mid_art.date}}
-            </div>
-            <div class="text">
-                {{mid_art.text}}
-            </div>
+        <div class="author_date">
+          {{main_art.author}} | {{main_art.date}}
         </div>
-        <div class="r_column">
-            <img src="{{right_art.image}}" class="art_img">
-            <div class="headline">
-                <a href="articles/{{right_art.art_slug}}">
-                    {{right_art.headline}}
-                </a>
-            </div>
-            <div class="author_date">
-                {{right_art.author}} | {{right_art.date}}
-            </div>
-            <div class="text">
-                {{right_art.text}}
-            </div>
+        <div class="text">
+          {{main_art.text}}
         </div>
+      </div>
     </div>
+  </div>
+
+  <div class="row">
+    <div class="l_column">
+      <img src="{{left_art.image}}" class="art_img">
+      <div class="headline">
+        <a href="articles/{{left_art.art_slug}}">
+        {{left_art.headline}}
+        </a>
+      </div>
+      <div class="author_date">
+        {{left_art.author}} | {{left_art.date}}
+      </div>
+      <div class="text">
+        {{left_art.text}}
+      </div>
+    </div>
+
+    <div class="m_column">
+      <img src="{{mid_art.image}}" class="art_img">
+      <div class="headline">
+        <a href="articles/{{mid_art.art_slug}}">
+          {{mid_art.headline}}
+        </a>
+      </div>
+      <div class="author_date">
+        {{mid_art.author}} | {{mid_art.date}}
+      </div>
+      <div class="text">
+        {{mid_art.text}}
+      </div>
+    </div>
+
+    <div class="r_column">
+      <img src="{{right_art.image}}" class="art_img">
+      <div class="headline">
+        <a href="articles/{{right_art.art_slug}}">
+          {{right_art.headline}}
+        </a>
+      </div>
+      <div class="author_date">
+        {{right_art.author}} | {{right_art.date}}
+      </div>
+      <div class="text">
+        {{right_art.text}}
+      </div>
+    </div>
+  </div>
 {% endblock %}
-
-
-

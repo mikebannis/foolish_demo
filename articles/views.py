@@ -15,7 +15,9 @@ QUOTES = 'articles/data/quotes_api.json'
 # ------------ Views ---------------------------------
 
 def index(request):
-    """ Index page for whole site """
+    """ 
+    Index page for whole site. Shows a primary article and three secondary articles
+    """
     main_art = Articles.get_first_with_tag('10-promise')
     #main_art = Articles.get_first_with_tag('test tag slug')
     ra = RandArticle(main_art.article_slug)
@@ -29,13 +31,14 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 def article(request, art_slug=None):
-    """ Render article body, comments, and stock quotes """
-    ### TODO - check for None
+    """ 
+    Individual article page. Includes article body, comments, and stock quotes 
+    """
+    ### TODO - check for None, though I think that's not even possible
     db_article = Articles.objects.get(article_slug=art_slug)
-    art_json = db_article.get_json_data()
     quotes = get_quotes()
 
-    # Add additional info to quotes
+    # Add additional info to quotes for presentation
     for q in quotes:
         q['MyChange'] = round(q['PercentChange']['Value']*100, 2)
 
@@ -65,7 +68,8 @@ def load_articles(request):
     """
     slugs = []
     count = 0
-    new_articles = get_articles()
+    # I shouldn't be calling a hidden method directly, but it's only for testing
+    new_articles = Articles._get_articles_json()
     for new_article in new_articles:
         slug = slugify(new_article['headline'])
         slugs.append(slug)
@@ -76,10 +80,12 @@ def load_articles(request):
             count += 1
         
     return HttpResponse(f'<h1>Done! Created {count} new articles in the DB</h1>' + \
-                        f'<p>{slugs}</p>')
+                        f'<h2>URL slugs found:</h2>{slugs}')
 
 def slug_test(request):
-    """ list all slugs for all articles"""
+    """ 
+    Show all slugs for all articles. This was used as a QnD way of viewing all tags.
+    """
     arts = [x.get_json_data() for x in Articles.objects.all()]
     context = {'articles': arts}
     template = loader.get_template('articles/slug_test.html')
@@ -89,7 +95,10 @@ def slug_test(request):
 # ------------ Helper classes/functions -----------------------
 
 class RandArticle(object):
-    """ Used to select articles for index page. Prevents showing duplicate articles """
+    """ 
+    Return random articles. Used to select articles for index page. 
+    Prevents showing duplicate articles.
+    """
     def __init__(self, main_art_slug):
         """ :param main_art_slug: slug for main article on homepage """
         self.arts = list(Articles.objects.exclude(article_slug=main_art_slug))
@@ -104,7 +113,7 @@ class RandArticle(object):
         return art
 
 def get_quotes():
-    """ Return quotes list """
+    """ Return quotes list as list of dicts"""
     with open(QUOTES, 'rt') as f:
         quotes = json.loads(f.readline())
     return quotes

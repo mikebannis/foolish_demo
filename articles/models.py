@@ -7,8 +7,11 @@ from datetime import datetime as dt
 
 CONTENT = 'articles/data/content_api.json'
 
-# Article model for linking comments. Article info is kept in JSON file
 class Articles(models.Model):
+    """ 
+    Article model for linking comments. Article info is kept in JSON file and 
+    should be obtained using get_json_data() or prep_article()
+    """
     article_slug=models.CharField(max_length=500, null=True) 
 
     def get_json_data(self):
@@ -22,7 +25,7 @@ class Articles(models.Model):
         raise Http404
 
     def prep_article(self):
-        """ Returns dict of article parts for rendering """
+        """ Returns dict of article parts to be used as context for rendering """
         json_data = self.get_json_data()
 
         # Grab date before 'T': 2017-11-10T15:02:00Z
@@ -39,7 +42,10 @@ class Articles(models.Model):
         }
     
     def tag_exists(self, tag_slug):
-        """ Returns True if one of the tag slugs is 'tag_slug'. Otherwise, return False """
+        """ 
+        Returns True if one of the tag slugs is 'tag_slug'. Otherwise, return 
+        False 
+        """
         json_data = self.get_json_data()
         for tag in json_data['tags']:  
             if tag['slug'] == tag_slug:
@@ -48,7 +54,7 @@ class Articles(models.Model):
 
     @staticmethod
     def get_first_with_tag(tag):
-        """ Return first article in DB with tag slug 'tag' """
+        """ Return first article object in DB with tag slug 'tag' """
         arts = Articles.objects.all()
         for art in arts:
             if art.tag_exists(tag):
@@ -74,17 +80,3 @@ class Articles(models.Model):
     def __str__(self):
         return self.article_slug
 
-#    def num_articles():
-#        """ Return number of articles in JSON file """
-#        articles = get_articles()
-#        return len(articles)
-#
-#    def get_article(num):
-#        """ Return article dict for article number 'num' (starts at 0) """
-#        articles = get_articles()
-#        len_art = len(articles)
-#        if num >= len_art:
-#            raise AttributeError(f'Requested article {num}. Maximum article' + \
-#                                  f' number is {len_art}')
-#        return articles[num]
-    
