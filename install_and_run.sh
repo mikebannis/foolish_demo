@@ -1,3 +1,3 @@
 #!/bin/bash
-pip install -r requirements.txt
-python manage.py runserver
+pip3 install -r requirements.txt
+python3 manage.py runserver
