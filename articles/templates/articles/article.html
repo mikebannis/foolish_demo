@@ -6,7 +6,10 @@
 {% endblock %}
 
 {% block content %}
-<h2> {{art_data.headline}} </h2>
+
+<div class="headline">
+  {{art_data.headline}} 
+</div>
 <div class="row">
   <!-- Article column -->
   <div class="l_column">
@@ -16,7 +19,10 @@
     <div class="pub_date">
       {{art_data.date}}
     </div>
-    {% autoescape off %}{{ art_data.body }}{% endautoescape %}
+    <div class="body">
+      {% autoescape off %}{{ art_data.body }}{% endautoescape %}
+    </div>
+    <h3> Comments </h3>
     {% render_comment_list for db_article %}
     <h3> What do you think? Let us know! </h3>
     {% render_comment_form for db_article %}
@@ -30,7 +36,7 @@
         <p>
           <div class="co_name">{{quote.CompanyName}}</div>
           <div class="symbol">{{quote.Exchange}}: {{quote.Symbol}}</div>
-          <div class="price">${{quote.CurrentPrice.Amount}} </div>
+          <div class="price">${{quote.CurrentPrice.Amount}}  </div>
           <div class="{{quote.ChangeClass}}"> ${{quote.Change.Amount}} ({{quote.MyChange}}%) </div>
         </p>
       </div>

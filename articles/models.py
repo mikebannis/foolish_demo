@@ -32,7 +32,9 @@ class Articles(models.Model):
         date = dt.strptime(json_data['publish_at'].split('T')[0], '%Y-%m-%d')
         date = date.strftime('%B %d, %Y')
         return {
-            'body': json_data['body'],
+            # I'm not sure what {%sfr%} is, but it's at the end of all the articles
+            # and ugly so let's get rid of it
+            'body': json_data['body'].split('{%sfr%}')[0],
             'image': json_data['images'][0]['url'],
             'headline': json_data['headline'],
             'author': json_data['authors'][0]['byline'],

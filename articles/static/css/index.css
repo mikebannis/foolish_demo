@@ -52,7 +52,6 @@
 
 
 .headline {
-    font-family: "Helvetica Neue";
     font-size: 26px;
     color: rgb(0, 119, 170);
     border-bottom-color: rgb(221, 221, 221);
@@ -61,7 +60,6 @@
 }
  
 .author_date {
-    font-family: "Helvetica Neue";
     font-size: 14px;
     font-weight: 700;
     color: rgb(51, 51, 51);

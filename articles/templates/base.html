@@ -1,17 +1,18 @@
-{% load static from staticfiles %}
 <!DOCTYPE html>
+{% load static from staticfiles %}
 <html lang="en">
   <head>  
     {% block title %}<title>Foolish Demo</title>{% endblock %}
     <meta charset="utf-8">
     <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/base.css"/> 
     <!-- Add additional CSS in static file -->
-    {% load static %}
-  
     {% block extra_head %}    {% endblock %}
   </head>
   <body>
-    <a href="/"><button type="button">Home</button></a>
+    <div class="top_bar">
+      <a href="/"><button type="button" class="home_button">Home</button></a>
+    </div>
     {% block content %}
     {% endblock %}
   </body>
