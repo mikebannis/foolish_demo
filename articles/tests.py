@@ -1,6 +1,6 @@
 """
 Tests for the articles app. Tests are setup to use backup data in case quotes and content
-JSON files are changed. This may cause issues if additional apps w/ tests are added.
+JSON files are changed. 
 """ 
 from django.test import TestCase, Client
 

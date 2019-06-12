@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.template import loader
 from django.template.defaultfilters import slugify
@@ -35,7 +35,7 @@ def article(request, art_slug=None):
     Individual article page. Includes article body, comments, and stock quotes 
     """
     ### TODO - check for None, though I think that's not even possible
-    db_article = Articles.objects.get(article_slug=art_slug)
+    db_article = get_object_or_404(Articles, article_slug=art_slug)
     quotes = get_quotes()
 
     # Add additional info to quotes for presentation
