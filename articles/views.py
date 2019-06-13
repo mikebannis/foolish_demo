@@ -84,7 +84,8 @@ def load_articles(request):
 
 def slug_test(request):
     """ 
-    Show all slugs for all articles. This was used as a QnD way of viewing all tags.
+    Show all slugs for all articles. This was used as a QnD way of viewing all tags for 
+    development purposes.
     """
     arts = [x.get_json_data() for x in Articles.objects.all()]
     context = {'articles': arts}
