@@ -8,19 +8,19 @@
   <div class="main_article">
     <div class="row">
       <div class="l_column_main">
-        <img src="{{main_art.image}}" id="main_img">
+        <img src="{{main_art.image_url}}" id="main_img">
       </div>
       <div class="r_column_main">
         <div class="headline">
-          <a href="articles/{{main_art.art_slug}}">
+          <a href="articles/{{main_art.article_slug}}">
             {{main_art.headline}}
           </a>
         </div>
         <div class="author_date">
-          {{main_art.author}} | {{main_art.date}}
+          {{main_art.author}} | {{main_art.published_date}}
         </div>
-        <div class="text">
-          {{main_art.text}}
+        <div class="promo">
+          {{main_art.promo}}
         </div>
       </div>
     </div>
@@ -29,47 +29,47 @@
   <div class="secondary_articles">
     <div class="row">
       <div class="l_column">
-        <img src="{{left_art.image}}" class="art_img">
+        <img src="{{left_art.image_url}}" class="art_img">
         <div class="headline">
-          <a href="articles/{{left_art.art_slug}}">
+          <a href="articles/{{left_art.article_slug}}">
           {{left_art.headline}}
           </a>
         </div>
         <div class="author_date">
-          {{left_art.author}} | {{left_art.date}}
+          {{left_art.author}} | {{left_art.published_date}}
         </div>
-        <div class="text">
-          {{left_art.text}}
+        <div class="promo">
+          {{left_art.promo}}
         </div>
       </div>
 
       <div class="m_column">
-        <img src="{{mid_art.image}}" class="art_img">
+        <img src="{{mid_art.image_url}}" class="art_img">
         <div class="headline">
-          <a href="articles/{{mid_art.art_slug}}">
+          <a href="articles/{{mid_art.article_slug}}">
             {{mid_art.headline}}
           </a>
         </div>
         <div class="author_date">
-          {{mid_art.author}} | {{mid_art.date}}
+          {{mid_art.author}} | {{mid_art.published_date}}
         </div>
-        <div class="text">
-          {{mid_art.text}}
+        <div class="promo">
+          {{mid_art.promo}}
         </div>
       </div>
 
       <div class="r_column">
-        <img src="{{right_art.image}}" class="art_img">
+        <img src="{{right_art.image_url}}" class="art_img">
         <div class="headline">
-          <a href="articles/{{right_art.art_slug}}">
+          <a href="articles/{{right_art.article_slug}}">
             {{right_art.headline}}
           </a>
         </div>
         <div class="author_date">
-          {{right_art.author}} | {{right_art.date}}
+          {{right_art.author}} | {{right_art.published_date}}
         </div>
-        <div class="text">
-          {{right_art.text}}
+        <div class="promo">
+          {{right_art.promo}}
         </div>
       </div>
     </div>

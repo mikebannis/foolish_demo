@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.template import loader
 from django.template.defaultfilters import slugify
 
-from .models import Articles
+from .models import Articles, Quotes
 
 import json
 import random
@@ -22,10 +22,10 @@ def index(request):
     #main_art = Articles.get_first_with_tag('test tag slug')
     ra = RandArticle(main_art.article_slug)
     context = {
-        'main_art': main_art.prep_article(), 
-        'left_art': ra.next().prep_article(),
-        'mid_art': ra.next().prep_article(),
-        'right_art': ra.next().prep_article(),
+        'main_art': main_art, 
+        'left_art': ra.next_article(),
+        'mid_art': ra.next_article(),
+        'right_art': ra.next_article(),
     }
     template = loader.get_template('index.html')
     return HttpResponse(template.render(context, request))
@@ -36,17 +36,17 @@ def article(request, art_slug=None):
     """
     ### TODO - check for None, though I think that's not even possible
     db_article = get_object_or_404(Articles, article_slug=art_slug)
-    quotes = get_quotes()
+    quotes = Quotes.objects.all()
 
-    # Add additional info to quotes for presentation
-    for q in quotes:
-        q['MyChange'] = round(q['PercentChange']['Value']*100, 2)
+    if not True:
+        for q in quotes:
+            q['MyChange'] = round(['PercentChange']['Value']*100, 2)
 
-        # Color coding for stock price change
-        if q['MyChange'] >= 0:
-            q['ChangeClass'] = 'positive'
-        else:
-            q['ChangeClass'] = 'negative'
+            # Color coding for stock price change
+            if q['MyChange'] >= 0:
+                q['ChangeClass'] = 'positive'
+            else:
+                q['ChangeClass'] = 'negative'
 
     template = loader.get_template('articles/article.html')
     context = { 'quotes': quotes, 
@@ -67,19 +67,38 @@ def load_articles(request):
     This is for testing purposes and clearly is not intended for use in production. 
     """
     slugs = []
-    count = 0
+    exist_count = 0
+    new_count = 0
     # I shouldn't be calling a hidden method directly, but it's only for testing
     new_articles = Articles._get_articles_json()
     for new_article in new_articles:
         slug = slugify(new_article['headline'])
         slugs.append(slug)
+
+        # Grab date before 'T': 2017-11-10T15:02:00Z
+        date = dt.strptime(new_article['publish_at'].split('T')[0], '%Y-%m-%d')
         try:
-            _ = Articles.objects.get(article_slug=slug)
+            art = Articles.objects.get(article_slug=slug)
+            art.body=new_article['body'],
+            art.image_url=new_article['images'][0]['url'],
+            art.headline=new_article.['headline'],
+            art.author=new_article['authors'][0]['byline'],
+            art.published_date=date,
+            art.promo=new_article['promo'])
+            #art.other_data=new_article)
+            exist_count +=1
         except Articles.DoesNotExist:
-            Articles.objects.create(article_slug=slug)
-            count += 1
-        
-    return HttpResponse(f'<h1>Done! Created {count} new articles in the DB</h1>' + \
+            Articles.objects.create(article_slug=slug,
+                                    body=new_article['body'],
+                                    image_url=new_article['images'][0]['url'],
+                                    headline=new_article.['headline'],
+                                    author=new_article['authors'][0]['byline'],
+                                    published_date=date,
+                                    promo=new_article['promo'])
+                                    #other_data=new_article)
+            new_count += 1
+    return HttpResponse(f'<h1>Done! Created {new_count} new articles in the DB</h1>' + \
+                        f'<h2>Updated {exist_count} existing articles</h2>' + \
                         f'<h2>URL slugs found:</h2>{slugs}')
 
 def slug_test(request):
@@ -104,7 +123,7 @@ class RandArticle(object):
         """ :param main_art_slug: slug for main article on homepage """
         self.arts = list(Articles.objects.exclude(article_slug=main_art_slug))
 
-    def next(self):
+    def next_article(self):
         """ Returns a random article, excluding those already used """
         try:
             art = random.choice(self.arts)
