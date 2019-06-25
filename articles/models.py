@@ -8,7 +8,7 @@ from datetime import datetime as dt
 CONTENT = 'articles/data/content_api.json'
 QUOTES = 'articles/data/quotes_api.json'
 
-class Quotes(models.Model):
+class Quote(models.Model):
     """ 
     Stock quote. 
     """
@@ -54,7 +54,7 @@ class Quotes(models.Model):
                 change_class = 'negative'
 
             try:
-                q=Quotes.objects.get(company_name=company_name)
+                q=Quote.objects.get(company_name=company_name)
                 q.exchange=new_q['Exchange']
                 q.symbol=new_q['Symbol']
                 q.price=new_q['CurrentPrice']['Amount']
@@ -64,8 +64,8 @@ class Quotes(models.Model):
                 q.save()
                 #art.other_data=new_article)
                 exist_count +=1
-            except Quotes.DoesNotExist:
-                Quotes.objects.create(company_name=company_name,
+            except Quote.DoesNotExist:
+                Quote.objects.create(company_name=company_name,
                                         exchange=new_q['Exchange'],
                                         symbol=new_q['Symbol'],
                                         price=new_q['CurrentPrice']['Amount'],
@@ -76,7 +76,7 @@ class Quotes(models.Model):
         return companies, exist_count, new_count
 
 
-class Articles(models.Model):
+class Article(models.Model):
     """ 
     Article model. 
     """
@@ -116,7 +116,7 @@ class Articles(models.Model):
     @staticmethod
     def get_first_with_tag(tag):
         """ Return first article object in DB with tag slug 'tag' """
-        arts = Articles.objects.all()
+        arts = Article.objects.all()
         for art in arts:
             if art.tag_exists(tag):
                 return art

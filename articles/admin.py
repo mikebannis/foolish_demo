@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import Articles, Quotes
+from .models import Article, Quote
 
 # Register your models here.
-admin.site.register(Articles)
-admin.site.register(Quotes)
+admin.site.register(Article)
+admin.site.register(Quote)
 

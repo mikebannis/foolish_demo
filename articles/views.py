@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.template import loader
 from django.template.defaultfilters import slugify
 
-from .models import Articles, Quotes
+from .models import Article, Quote
 
 import json
 import random
@@ -16,8 +16,8 @@ def index(request):
     """ 
     Index page for whole site. Shows a primary article and three secondary articles
     """
-    main_art = Articles.get_first_with_tag('10-promise')
-    #main_art = Articles.get_first_with_tag('test tag slug')
+    main_art = Article.get_first_with_tag('10-promise')
+    #main_art = Article.get_first_with_tag('test tag slug')
     ra = RandArticle(main_art.article_slug)
     context = {
         'main_art': main_art, 
@@ -33,8 +33,8 @@ def article(request, art_slug=None):
     Individual article page. Includes article body, comments, and stock quotes 
     """
     ### TODO - check for None, though I think that's not even possible
-    article = get_object_or_404(Articles, article_slug=art_slug)
-    quotes = Quotes.objects.all()
+    article = get_object_or_404(Article, article_slug=art_slug)
+    quotes = Quote.objects.all()
 
     template = loader.get_template('articles/article.html')
     context = { 'article': article,
@@ -56,7 +56,7 @@ def load_articles(request):
     exist_count = 0
     new_count = 0
     # I shouldn't be calling a hidden method directly, but it's only for testing
-    new_articles = Articles._get_articles_json()
+    new_articles = Article._get_articles_json()
     for new_article in new_articles:
         slug = slugify(new_article['headline'])
         slugs.append(slug)
@@ -64,7 +64,7 @@ def load_articles(request):
         # Grab date before 'T': 2017-11-10T15:02:00Z
         date = dt.strptime(new_article['publish_at'].split('T')[0], '%Y-%m-%d')
         try:
-            art = Articles.objects.get(article_slug=slug)
+            art = Article.objects.get(article_slug=slug)
             art.body=new_article['body']
             art.image_url=new_article['images'][0]['url']
             art.headline=new_article['headline']
@@ -74,8 +74,8 @@ def load_articles(request):
             art.save()
             #art.other_data=new_article)
             exist_count +=1
-        except Articles.DoesNotExist:
-            Articles.objects.create(article_slug=slug,
+        except Article.DoesNotExist:
+            Article.objects.create(article_slug=slug,
                                     body=new_article['body'],
                                     image_url=new_article['images'][0]['url'],
                                     headline=new_article['headline'],
@@ -96,7 +96,7 @@ def load_quotes(request):
     TODO:
     This is for testing purposes and clearly is not intended for use in production. 
     """
-    companies, exist_count, new_count = Quotes.load_quotes()
+    companies, exist_count, new_count = Quote.load_quotes()
 
     return HttpResponse(f'<h1>Done! Created {new_count} new quotes in the DB</h1>' + \
                         f'<h2>Updated {exist_count} existing quotes</h2>' + \
@@ -106,7 +106,7 @@ def slug_test(request):
     Show all slugs for all articles. This was used as a QnD way of viewing all tags for 
     development purposes.
     """
-    arts = [x.get_json_data() for x in Articles.objects.all()]
+    arts = [x.get_json_data() for x in Article.objects.all()]
     context = {'articles': arts}
     template = loader.get_template('articles/slug_test.html')
     return HttpResponse(template.render(context, request))
@@ -121,7 +121,7 @@ class RandArticle(object):
     """
     def __init__(self, main_art_slug):
         """ :param main_art_slug: slug for main article on homepage """
-        self.arts = list(Articles.objects.exclude(article_slug=main_art_slug))
+        self.arts = list(Article.objects.exclude(article_slug=main_art_slug))
 
     def next_article(self):
         """ Returns a random article, excluding those already used """
