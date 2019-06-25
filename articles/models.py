@@ -6,41 +6,86 @@ import json
 from datetime import datetime as dt
 
 CONTENT = 'articles/data/content_api.json'
+QUOTES = 'articles/data/quotes_api.json'
 
 class Quotes(models.Model):
     """ 
-    Stock quote. All currently unused data is in other_data 
+    Stock quote. 
     """
     company_name=models.CharField(max_length=100, null=True) 
     exchange=models.CharField(max_length=100, null=True) 
     symbol=models.CharField(max_length=100, null=True) 
-    price=models.FloatField()
-    change_amount=models.FloatField()
-    percent_change=models.FloatField()
+    price=models.FloatField(null=True)
+    change_amount=models.FloatField(null=True)
+    percent_change=models.FloatField(null=True)
     # change_class is either 'positive' or 'negative'
-    change_class=CharField(max_length=10, null=True)
+    change_class=models.CharField(max_length=10, null=True)
     #other_data= # json dict
 
-    if False:
-          q['MyChange'] = round(['PercentChange']['Value']*100, 2)
- 
-          # Color coding for stock price change
-          if q['MyChange'] >= 0:
-              q['ChangeClass'] = 'positive'
-          else:
-              q['ChangeClass'] = 'negative'
-    
-    
+    def __str__(self):
+        return self.company_name
+
+    @staticmethod
+    def load_quotes(quotes_file=QUOTES):
+        """
+        Create quotes entries in DB from JSON quotes file. Checks if quote 
+        already exists before creation. If it exists, update
+        
+        :param quotes_file: path and filename of standard Fool JSON stock quotes
+        :returns: companies, exist_count, new_count
+            companies - list of names of companies w/ quotes in JSON
+            exist_count - number of companies in JSON already in DB
+            new_count - number of companies in JSON file not in DB
+        """
+        companies = []
+        exist_count = 0
+        new_count = 0
+
+        with open(quotes_file, 'rt') as f:
+            quotes = json.loads(f.readline())
+
+        for new_q in quotes:
+            company_name = new_q['CompanyName']
+            companies.append(company_name)
+            percent_change = round(new_q['PercentChange']['Value']*100, 2)
+            if percent_change >= 0:
+                change_class = 'positive'
+            else:
+                change_class = 'negative'
+
+            try:
+                q=Quotes.objects.get(company_name=company_name)
+                q.exchange=new_q['Exchange']
+                q.symbol=new_q['Symbol']
+                q.price=new_q['CurrentPrice']['Amount']
+                q.change_amount=new_q['Change']['Amount']
+                q.percent_change=percent_change
+                q.change_class=change_class
+                q.save()
+                #art.other_data=new_article)
+                exist_count +=1
+            except Quotes.DoesNotExist:
+                Quotes.objects.create(company_name=company_name,
+                                        exchange=new_q['Exchange'],
+                                        symbol=new_q['Symbol'],
+                                        price=new_q['CurrentPrice']['Amount'],
+                                        change_amount=new_q['Change']['Amount'],
+                                        percent_change=percent_change,
+                                        change_class=change_class,)
+                new_count += 1
+        return companies, exist_count, new_count
+
+
 class Articles(models.Model):
     """ 
     Article model. 
     """
     article_slug=models.CharField(max_length=500, null=True) 
-    body=models.TextField() 
-    image=models.CharField(max_length=100, null=True) 
+    body=models.TextField(null=True) 
+    image_url=models.CharField(max_length=100, null=True) 
     headline=models.CharField(max_length=100, null=True) 
     author=models.CharField(max_length=100, null=True) 
-    published_date=models.DateTimeField() 
+    published_date=models.DateTimeField(null=True) 
     promo=models.CharField(max_length=100, null=True) 
     #other_data= # json dict
 
@@ -56,25 +101,6 @@ class Articles(models.Model):
         # TODO: http404 is wrong, if we get here something is wrong in the DB 
         # (or this code), notify admin
         raise Http404
-
-    #def prep_article(self):
-    #    """ Returns dict of article parts to be used as context for rendering """
-    #    json_data = self.get_json_data()
-
-    #    # Grab date before 'T': 2017-11-10T15:02:00Z
-    #    date = dt.strptime(json_data['publish_at'].split('T')[0], '%Y-%m-%d')
-    #    date = date.strftime('%B %d, %Y')
-    #    return {
-    #        # I'm not sure what {%sfr%} is, but it's at the end of all the articles
-    #        # and ugly so let's get rid of it
-    #        'body': json_data['body'].split('{%sfr%}')[0],
-    #        'image': json_data['images'][0]['url'],
-    #        'headline': json_data['headline'],
-    #        'author': json_data['authors'][0]['byline'],
-    #        'date': date,
-    #        'text': json_data['promo'],
-    #        'art_slug': self.article_slug,
-    #    }
     
     def tag_exists(self, tag_slug):
         """ 
@@ -111,7 +137,6 @@ class Articles(models.Model):
         with open(CONTENT, 'rt') as f:
             content = json.loads(f.readline())
         return content['results']
-
 
     def __str__(self):
         return self.article_slug

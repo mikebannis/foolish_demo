@@ -9,8 +9,6 @@ import json
 import random
 from datetime import datetime as dt
 
-QUOTES = 'articles/data/quotes_api.json'
-
 # -----------------------------------------------------
 # ------------ Views ---------------------------------
 
@@ -35,24 +33,12 @@ def article(request, art_slug=None):
     Individual article page. Includes article body, comments, and stock quotes 
     """
     ### TODO - check for None, though I think that's not even possible
-    db_article = get_object_or_404(Articles, article_slug=art_slug)
+    article = get_object_or_404(Articles, article_slug=art_slug)
     quotes = Quotes.objects.all()
 
-    if not True:
-        for q in quotes:
-            q['MyChange'] = round(['PercentChange']['Value']*100, 2)
-
-            # Color coding for stock price change
-            if q['MyChange'] >= 0:
-                q['ChangeClass'] = 'positive'
-            else:
-                q['ChangeClass'] = 'negative'
-
     template = loader.get_template('articles/article.html')
-    context = { 'quotes': quotes, 
-               'db_article': db_article,
-               'art_data': db_article.prep_article(),
-    }
+    context = { 'article': article,
+                'quotes': quotes }
     return HttpResponse(template.render(context, request))
 
 # -------------------------------------------------------------
@@ -61,7 +47,7 @@ def article(request, art_slug=None):
 def load_articles(request):
     """ 
     Create article entries in DB from CONTENT file. Checks if article already exists
-    before creation. If it exists, don't do anything
+    before creation. If it exists, update
     
     TODO:
     This is for testing purposes and clearly is not intended for use in production. 
@@ -79,19 +65,20 @@ def load_articles(request):
         date = dt.strptime(new_article['publish_at'].split('T')[0], '%Y-%m-%d')
         try:
             art = Articles.objects.get(article_slug=slug)
-            art.body=new_article['body'],
-            art.image_url=new_article['images'][0]['url'],
-            art.headline=new_article.['headline'],
-            art.author=new_article['authors'][0]['byline'],
-            art.published_date=date,
-            art.promo=new_article['promo'])
+            art.body=new_article['body']
+            art.image_url=new_article['images'][0]['url']
+            art.headline=new_article['headline']
+            art.author=new_article['authors'][0]['byline']
+            art.published_date=date
+            art.promo=new_article['promo']
+            art.save()
             #art.other_data=new_article)
             exist_count +=1
         except Articles.DoesNotExist:
             Articles.objects.create(article_slug=slug,
                                     body=new_article['body'],
                                     image_url=new_article['images'][0]['url'],
-                                    headline=new_article.['headline'],
+                                    headline=new_article['headline'],
                                     author=new_article['authors'][0]['byline'],
                                     published_date=date,
                                     promo=new_article['promo'])
@@ -101,6 +88,19 @@ def load_articles(request):
                         f'<h2>Updated {exist_count} existing articles</h2>' + \
                         f'<h2>URL slugs found:</h2>{slugs}')
 
+def load_quotes(request):
+    """ 
+    Create quotes entries in DB from QUOTES file. Checks if quote already exists
+    before creation. If it exists, update
+    
+    TODO:
+    This is for testing purposes and clearly is not intended for use in production. 
+    """
+    companies, exist_count, new_count = Quotes.load_quotes()
+
+    return HttpResponse(f'<h1>Done! Created {new_count} new quotes in the DB</h1>' + \
+                        f'<h2>Updated {exist_count} existing quotes</h2>' + \
+                        f'<h2>Quotes imported for the following companies:</h2>{companies}')
 def slug_test(request):
     """ 
     Show all slugs for all articles. This was used as a QnD way of viewing all tags for 
@@ -131,10 +131,4 @@ class RandArticle(object):
             raise ValueError('Requested random article but no articles remain')
         self.arts.remove(art)
         return art
-
-def get_quotes():
-    """ Return quotes list as list of dicts"""
-    with open(QUOTES, 'rt') as f:
-        quotes = json.loads(f.readline())
-    return quotes
 

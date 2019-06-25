@@ -8,24 +8,24 @@
 {% block content %}
 
 <div class="headline">
-  {{art_data.headline}} 
+  {{article.headline}} 
 </div>
 <div class="row">
   <!-- Article column -->
   <div class="l_column">
     <div class="author_name">
-      {{art_data.author}}
+      {{article.author}}
     </div>
     <div class="pub_date">
-      {{art_data.date}}
+      {{article.published_date}}
     </div>
     <div class="body">
-      {% autoescape off %}{{ art_data.body }}{% endautoescape %}
+      {% autoescape off %}{{ article.body }}{% endautoescape %}
     </div>
     <h3> Comments </h3>
-    {% render_comment_list for db_article %}
+    {% render_comment_list for article %}
     <h3> What do you think? Let us know! </h3>
-    {% render_comment_form for db_article %}
+    {% render_comment_form for article %}
   </div>
   <!-- Quotes column -->
   <div class="r_column">
@@ -34,10 +34,11 @@
       {% for quote in quotes %}
       <div class="quote">
         <p>
-          <div class="co_name">{{quote.CompanyName}}</div>
-          <div class="symbol">{{quote.Exchange}}: {{quote.Symbol}}</div>
-          <div class="price">${{quote.CurrentPrice.Amount}}  </div>
-          <div class="{{quote.ChangeClass}}"> ${{quote.Change.Amount}} ({{quote.MyChange}}%) </div>
+          <div class="co_name">{{quote.company_name}}</div>
+          <div class="symbol">{{quote.exchange}}: {{quote.symbol}}</div>
+          <div class="price">${{quote.price}}  </div>
+          <div class="{{quote.change_class}}"> 
+            ${{quote.change_amount}} ({{quote.percent_change}}%) </div>
         </p>
       </div>
       {% endfor %}
