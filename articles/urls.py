@@ -11,6 +11,6 @@ urlpatterns = [
     path('slug_test/', views.slug_test),
 
     # The below line will catch almost anything in addition to article headline
-    # slugs and and should be the last line in urlpatterns
+    # slugs and should be the last line in urlpatterns
     path('<str:art_slug>/', views.article, name='article'),
 ]

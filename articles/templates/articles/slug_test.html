@@ -8,7 +8,7 @@
     {% for article in articles %}
         <h1> {{article.headline}}</h1>
         <ul>
-        {% for tag in article.tags %}
+        {% for tag in article.tags.all %}
             <li>{{tag.slug}}</li>
         {% endfor %}
         </ul>

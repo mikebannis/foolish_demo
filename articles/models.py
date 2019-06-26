@@ -10,7 +10,7 @@ QUOTES = 'articles/data/quotes_api.json'
 
 class Quote(models.Model):
     """ 
-    Stock quote. 
+    Stock quote. This does not store all data from JSON.
     """
     company_name=models.CharField(max_length=100, null=True) 
     exchange=models.CharField(max_length=100, null=True) 
@@ -20,7 +20,6 @@ class Quote(models.Model):
     percent_change=models.FloatField(null=True)
     # change_class is either 'positive' or 'negative'
     change_class=models.CharField(max_length=10, null=True)
-    #other_data= # json dict
 
     def __str__(self):
         return self.company_name
@@ -47,38 +46,42 @@ class Quote(models.Model):
         for new_q in quotes:
             company_name = new_q['CompanyName']
             companies.append(company_name)
+
+            q, created = Quote.objects.get_or_create(company_name=company_name)
+            q.exchange = new_q['Exchange']
+            q.symbol = new_q['Symbol']
+            q.price = new_q['CurrentPrice']['Amount']
+            q.change_amount = new_q['Change']['Amount']
+
             percent_change = round(new_q['PercentChange']['Value']*100, 2)
             if percent_change >= 0:
                 change_class = 'positive'
             else:
                 change_class = 'negative'
-
-            try:
-                q=Quote.objects.get(company_name=company_name)
-                q.exchange=new_q['Exchange']
-                q.symbol=new_q['Symbol']
-                q.price=new_q['CurrentPrice']['Amount']
-                q.change_amount=new_q['Change']['Amount']
-                q.percent_change=percent_change
-                q.change_class=change_class
-                q.save()
-                #art.other_data=new_article)
-                exist_count +=1
-            except Quote.DoesNotExist:
-                Quote.objects.create(company_name=company_name,
-                                        exchange=new_q['Exchange'],
-                                        symbol=new_q['Symbol'],
-                                        price=new_q['CurrentPrice']['Amount'],
-                                        change_amount=new_q['Change']['Amount'],
-                                        percent_change=percent_change,
-                                        change_class=change_class,)
+            q.percent_change = percent_change
+            q.change_class = change_class
+            q.save()
+            
+            if created:
                 new_count += 1
+            else:
+                exist_count +=1
         return companies, exist_count, new_count
 
 
+class Tag(models.Model):
+    """ 
+    Article tags
+    """
+    slug=models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.slug
+    
+
 class Article(models.Model):
     """ 
-    Article model. 
+    Article model. This does not store all data from JSON.
     """
     article_slug=models.CharField(max_length=500, null=True) 
     body=models.TextField(null=True) 
@@ -87,40 +90,10 @@ class Article(models.Model):
     author=models.CharField(max_length=100, null=True) 
     published_date=models.DateTimeField(null=True) 
     promo=models.CharField(max_length=100, null=True) 
-    #other_data= # json dict
+    tags=models.ManyToManyField(Tag, related_name='articles')
 
-    def get_json_data(self):
-        """ Return dict of article info represented by self from JSON file """
-        ##########################
-        # TODO: still used by tag_exists() - get rid of this!!!!
-        ##########################
-        arts = self._get_articles_json()
-        for art in arts:
-            if self.slugify(art['headline']) == self.article_slug:
-                return art
-        # TODO: http404 is wrong, if we get here something is wrong in the DB 
-        # (or this code), notify admin
-        raise Http404
-    
-    def tag_exists(self, tag_slug):
-        """ 
-        Returns True if one of the tag slugs is 'tag_slug'. Otherwise, return 
-        False 
-        """
-        json_data = self.get_json_data()
-        for tag in json_data['tags']:  
-            if tag['slug'] == tag_slug:
-                return True
-        return False
-
-    @staticmethod
-    def get_first_with_tag(tag):
-        """ Return first article object in DB with tag slug 'tag' """
-        arts = Article.objects.all()
-        for art in arts:
-            if art.tag_exists(tag):
-                return art
-        raise ValueError(f'No article with tag {tag} found!')
+    def __str__(self):
+        return self.article_slug
 
     @staticmethod
     def slugify(headline):
@@ -131,13 +104,50 @@ class Article(models.Model):
         """
         return django_slugify(headline)
         
-    @staticmethod    
-    def _get_articles_json():
-        """ Return all articles as list of dicts from CONTENT JSON file """
+    @staticmethod
+    def load_articles(articles_file=CONTENT): 
+        """ 
+        Create article entries in DB from JSON content file. Checks if article 
+        already exists before creation. If it exists, update
+        
+        :param articles_file: path and filename of standard Fool JSON articles/content file
+        :returns: art_slugs, exist_count, new_count
+            art_slugs - list of article slugs in JSON
+            exist_count - number articles in JSON already in DB
+            new_count - number articles in JSON file not in DB
+        """
+        slugs = []
+        exist_count = 0
+        new_count = 0
         with open(CONTENT, 'rt') as f:
-            content = json.loads(f.readline())
-        return content['results']
+            new_articles = json.loads(f.readline())['results']  
 
-    def __str__(self):
-        return self.article_slug
+        for new_article in new_articles:
+            slug = Article.slugify(new_article['headline'])
+            slugs.append(slug)
+
+            art, created = Article.objects.get_or_create(article_slug=slug)
+
+            # I have no idea what {%sfr%} is, but it's ugly and at the end of all 
+            # articles. Remove it
+            art.body = new_article['body'].split('{%sfr%}')[0]
+            art.image_url = new_article['images'][0]['url']
+            art.headline = new_article['headline']
+            art.author = new_article['authors'][0]['byline']
+            art.promo = new_article['promo']
+
+            # Grab date before 'T': 2017-11-10T15:02:00Z
+            date = dt.strptime(new_article['publish_at'].split('T')[0], '%Y-%m-%d')
+            art.published_date=date
+            art.save()
+
+            tag_slugs = [tag['slug'] for tag in new_article['tags']] 
+            art.tags.set([Tag.objects.get_or_create(slug=slug)[0] for slug in tag_slugs])
+            art.save()
+            
+            if created:
+                new_count += 1
+            else:
+                exist_count += 1
+        return slugs, exist_count, new_count 
 

@@ -7,14 +7,13 @@ from django.test import TestCase, Client
 from . import models
 from . import views
 
+TEST_QUOTES = 'articles/test_data/quotes_api.json'
+TEST_CONTENT = 'articles/test_data/content_api.json'
+
 class ViewsTestCase(TestCase):
     def setUp(self):
-        views.QUOTES = 'articles/test_data/quotes_api.json'
-        models.CONTENT = 'articles/test_data/content_api.json'
-        models.Article.objects.create(article_slug='why-atlassian-corporation-plc-stock-gained-376-in-october')
-        models.Article.objects.create(article_slug='why-ncr-corporation-stock-lost-145-in-october')
-        models.Article.objects.create(article_slug='51job-accelerates-to-get-the-job-done')
-        models.Article.objects.create(article_slug='3-takeaways-from-intel-corps-10-q-filing')
+        models.Article.load_articles(articles_file=TEST_CONTENT)
+        models.Quote.load_quotes(quotes_file=TEST_QUOTES)
         self.client = Client()
 
     def test_articles(self):
@@ -22,53 +21,51 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 301)
         response = self.client.get('/articles/51job-accelerates-to-get-the-job-done/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['quotes']), 25)
+        self.assertEqual(len(response.context['quotes']), 24)
 
     def test_index(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['main_art']['art_slug'], 'why-atlassian-corporation-plc-stock-gained-376-in-october')
+        self.assertEqual(response.context['main_art'].article_slug, 'heres-why-barrrick-gold-plunged-10-in-october')
 
 class QuotesTestCase(TestCase):
     def setUp(self):
-        views.QUOTES = 'articles/test_data/quotes_api.json'
+        models.Quote.load_quotes(quotes_file=TEST_QUOTES)
 
     def test_get_quotes(self):
-        x = views.get_quotes()
-        self.assertEqual(len(x), 25)
-        self.assertEqual(x[0]['CompanyName'], 'Goldman Sachs')
+        x = list(models.Quote.objects.all())
+        self.assertEqual(len(x), 24)
+        self.assertEqual(x[0].company_name, 'Goldman Sachs')
 
 class ArticleTestCase(TestCase):
     def setUp(self):
-        models.CONTENT = 'articles/test_data/content_api.json'
-        models.Article.objects.create(article_slug='is-goldman-sachs-stock-worth-a-look')
-        models.Article.objects.create(article_slug='why-ncr-corporation-stock-lost-145-in-october')
+        models.Article.load_articles(articles_file=TEST_CONTENT)
+        models.Quote.load_quotes(quotes_file=TEST_QUOTES)
     
-    def test_json(self):
+    def test_attributes(self):
         x = models.Article.objects.get(article_slug='is-goldman-sachs-stock-worth-a-look')
-        data = x.get_json_data()
-        self.assertEqual(data['headline'], "Is Goldman Sachs' Stock Worth a Look?")
-        self.assertEqual(data['promo'], 'Three reasons to think that Goldman Sachs’ stock is reasonably priced.')
+        self.assertEqual(x.headline, 'Is Goldman Sachs\' Stock Worth a Look?')
+        self.assertEqual(x.promo, 'Three reasons to think that Goldman Sachs’ stock is reasonably priced.')
+        self.assertEqual(x.image_url, 'https://g.foolcdn.com/editorial/images/463175/goldman-sachs-tower.jpg')
 
-    def test_prep(self):
-        x = models.Article.objects.get(article_slug='is-goldman-sachs-stock-worth-a-look')
-        d = x.prep_article()
-        self.assertEqual(d['headline'], "Is Goldman Sachs' Stock Worth a Look?")
-        self.assertEqual(d['text'], 'Three reasons to think that Goldman Sachs’ stock is reasonably priced.')
-        self.assertEqual(d['image'],'https://g.foolcdn.com/editorial/images/463175/goldman-sachs-tower.jpg')
-    
     def test_tags(self):
-        x = models.Article.objects.get(article_slug='is-goldman-sachs-stock-worth-a-look')
-        self.assertTrue(x.tag_exists('msn'))
-        self.assertFalse(x.tag_exists('10-promise'))
-        x = models.Article.objects.get(article_slug='why-ncr-corporation-stock-lost-145-in-october')
-        self.assertFalse(x.tag_exists('google'))
-        self.assertTrue(x.tag_exists('10-promise'))
+        x = models.Article.objects.get(article_slug='51job-accelerates-to-get-the-job-done')
 
-    def test_get_first(self):
-        x = models.Article.get_first_with_tag('10-promise')
-        # Note this is not the first article with '10-promise' on the site, as we're
-        # using a test DB
-        self.assertEqual(x.article_slug, 'why-ncr-corporation-stock-lost-145-in-october')
-        with self.assertRaises(ValueError):
-            models.Article.get_first_with_tag('not-a-real-tag') 
+        real_tags = ['msn', 'yahoo-news', 'default-partners']
+        for tag in real_tags:
+            test_tag = models.Tag.objects.get(slug=tag)
+            self.assertEqual(test_tag, x.tags.get(slug=tag))
+
+        with self.assertRaises(models.Tag.DoesNotExist):
+            x.tags.get(slug='10-promise')
+
+        false_tags = ['20-promise', 'yahoo-monEy', 'go0ogle']
+        for tag in false_tags:
+            with self.assertRaises(models.Tag.DoesNotExist):
+                test_tag = models.Tag.objects.get(slug=tag)
+
+    def test_get_last_10_promise(self):
+        tag = models.Tag.objects.get(slug='10-promise')
+        main_art = tag.articles.first()
+        #print('main_art:', main_art)
+        self.assertEqual(main_art.article_slug, 'heres-why-barrrick-gold-plunged-10-in-october')

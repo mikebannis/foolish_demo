@@ -1,7 +1,7 @@
 """
 Script to load new articles from data/content_api.json. Old articles are not
 deleted and articles in the DB with an identical headline in the JSON file
-are not modified.
+are updated.
 """
 
 def main():
